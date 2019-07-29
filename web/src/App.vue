@@ -13,7 +13,7 @@ import Header from "@/components/Header.vue";
     Header: Header
   }
 })
-export default class HelloWorld extends Vue {}
+export default class App extends Vue {}
 </script>
 
 <style lang="scss"></style>
