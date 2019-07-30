@@ -70,7 +70,7 @@
     </div>
     <div>
       <div
-        class="w-full flex-grow lg:flex lg:items-center lg:w-auto hidden lg:block mt-2 lg:mt-0 bg-white z-20"
+        class="w-full flex-grow lg:flex lg:items-center lg:w-auto mt-2 lg:mt-0 bg-white z-20"
         id="nav-content"
       >
         <ul class="list-reset lg:flex flex-1 items-center px-4 md:px-0">
@@ -93,7 +93,7 @@
             </a>
           </li>
         </ul>
-        <div class="relative pull-right pl-4 pr-4 md:pr-0">
+        <div class="relative pull-right pl-4 px-4 md:px-0">
           <div>
             <a
               href="#"
@@ -105,16 +105,19 @@
         </div>
       </div>
     </div>
-    <div v-if="addMonitor">
-      <AddMonitor></AddMonitor>
+    <div v-if="addMonitor" class="px-4 md:px-0">
+      <AddMonitor @mon:created="handleMonitorAdded"></AddMonitor>
     </div>
-    <div>
+    <div class="px-4 md:px-0">
       <h1 class="text-lg my-4">api.islandcivil.com</h1>
       <template v-for="(monitor, i) in monitors">
         <monitor-list-card
+          :id="monitor.id"
           :name="monitor.name"
           :status="monitor.status"
+          :endpoint="monitor.endpoint"
           :key="i"
+          @mon:deleted="handleMonitorDeleted"
         ></monitor-list-card>
       </template>
     </div>
@@ -137,13 +140,26 @@ export default class MonitoringHome extends Vue {
   addMonitor = false;
   monitors = [];
 
-  created() {
+  handleMonitorAdded() {
+    this.addMonitor = false;
+    this.fetchMonitors();
+  }
+
+  handleMonitorDeleted() {
+    this.fetchMonitors();
+  }
+
+  fetchMonitors() {
     axios
       .get("http://localhost:8000/api/v1/monitors")
       .then(r => {
         this.monitors = r.data;
       })
       .catch(e => {});
+  }
+
+  created() {
+    this.fetchMonitors();
   }
 }
 </script>

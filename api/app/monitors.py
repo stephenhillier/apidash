@@ -1,12 +1,12 @@
 """
 Monitors API pydantic models
 """
-from pydantic import BaseModel
+from pydantic import BaseModel, UrlStr
 
 class MonitorRequest(BaseModel):
     """ a request for a new monitor, which must include a name and an endpoint """
     name: str
-    endpoint: str
+    endpoint: UrlStr
 
 
 class Monitor(BaseModel):
@@ -14,3 +14,7 @@ class Monitor(BaseModel):
     id: int
     name: str
     endpoint: str
+    status: int = 1
+
+    class Config:
+        orm_mode = True
