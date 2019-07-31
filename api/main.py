@@ -9,8 +9,8 @@ from starlette.responses import Response
 from starlette.middleware.cors import CORSMiddleware
 
 from app.config import DATABASE_URI
-from app import monitors_db as mon_repo
-from app import monitors as monitors_v1
+from app.monitors import db as mon_repo
+from app.monitors import models as monitors_v1
 
 database = databases.Database(DATABASE_URI)
 

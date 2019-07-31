@@ -26,8 +26,8 @@ class Monitor(BaseModel):
     name: str
     endpoint: str
     current_status: int = 1
-    last_checked = Optional[datetime]
-    weekly = List[DailySummary] = []
+    last_checked: Optional[datetime]
+    weekly: List[DailySummary] = []
 
     class Config:
         orm_mode = True

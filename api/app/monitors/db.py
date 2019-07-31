@@ -1,9 +1,10 @@
 """ database tables and operations for monitors """
 import datetime
 from sqlalchemy import Column, BigInteger, String, DateTime, ForeignKey, MetaData, Integer, Boolean
+from sqlalchemy.orm import relationship
 from databases import Database
 from app.db.base_class import BaseTable
-from app import monitors as monitors_v1
+from app.monitors import models as monitors_v1
 
 metadata = MetaData()
 
@@ -16,18 +17,18 @@ class Monitor(BaseTable):
     endpoint = Column(String, nullable=False)
     create_time = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
     expire_time = Column(DateTime, nullable=True)
-
+    checks = relationship("Check", back_populates="monitor")
 
 class Check(BaseTable):
     """ a check is a single check request made for a monitor """
-    __tablename__ = "check"
+    __tablename__ = "check_status"
 
     id = Column(BigInteger, primary_key=True)
-    monitor = Column(BigInteger, ForeignKey('monitor.id'), nullable=False)
+    monitor_id = Column(BigInteger, ForeignKey('monitor.id'), nullable=False)
     check_time = Column(DateTime, nullable=False)
     status_code = Column(Integer, nullable=False)
     schema_valid = Column(Boolean)  # can be null if no schema defined
-
+    monitor = relationship("Monitor", back_populates="checks")
 
 monitor = Monitor.__table__
 check = Check.__table__
