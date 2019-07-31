@@ -1,7 +1,10 @@
 """
 Monitors API pydantic models
 """
+from datetime import datetime, date
 from pydantic import BaseModel, UrlStr
+from typing import Optional, List
+
 
 class MonitorRequest(BaseModel):
     """ a request for a new monitor, which must include a name and an endpoint """
@@ -9,12 +12,22 @@ class MonitorRequest(BaseModel):
     endpoint: UrlStr
 
 
+class DailySummary(BaseModel):
+    """ a summary of a day's worth of checks for an endpoint monitor """
+    date: date
+    num_ok: int
+    num_warn: int
+    num_fail: int
+
+
 class Monitor(BaseModel):
     """ a monitor represents a re-occuring check against an endpoint """
     id: int
     name: str
     endpoint: str
-    status: int = 1
+    current_status: int = 1
+    last_checked = Optional[datetime]
+    weekly = List[DailySummary] = []
 
     class Config:
         orm_mode = True
