@@ -60,7 +60,7 @@
                 <h5 class="uppercase text-grey">
                   Days since last outage
                 </h5>
-                <h3 class="text-3xl">17 days</h3>
+                <h3 class="text-3xl">2 days</h3>
               </div>
             </div>
           </div>
@@ -109,7 +109,16 @@
       <AddMonitor @mon:created="handleMonitorAdded"></AddMonitor>
     </div>
     <div class="px-4 md:px-0">
-      <h1 class="text-lg my-4">api.islandcivil.com</h1>
+      <div class="lg:flex mt-2 px-4 md:px-0">
+        <div class="w-full lg:w-4/6 bg-white text-lg">
+          jsonplaceholder.typicode.com
+        </div>
+        <div class="w-full lg:w-1/6 bg-white text-sm text-center">
+          Last 7 days
+        </div>
+        <div class="w-full lg:w-1/6 bg-white"></div>
+      </div>
+
       <template v-for="(monitor, i) in monitors">
         <monitor-list-card
           :id="monitor.id"
