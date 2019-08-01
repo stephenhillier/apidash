@@ -61,6 +61,20 @@ async def get_monitor(db: Database, monitor_id: int):
     """ get a single monitor """
 
     query = monitor.select().where(monitor.c.id == monitor_id)
+
+
+    summary = """
+        SELECT day, coalesce(ct, 0) AS ct
+        FROM (SELECT now()::date -d AS day FROM generate_series (0, 6) d) d
+        LEFT JOIN (
+        SELECT check_time::date AS day, count(*) AS ct,
+            COUNT(CASE WHEN)
+        FROM check_status
+        WHERE check_time >= date_trunc('day', now()) - interval '6d'
+        GROUP BY 1
+        ) e USING (day);
+    """
+
     return await db.fetch_one(query)
 
 async def get_last_seven_days(db: Database, monitor_id: int):
