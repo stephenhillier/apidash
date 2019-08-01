@@ -45,11 +45,21 @@ async def list_monitors():
     monitors = await mon_repo.list_monitors(database)
     return monitors
 
+
+@app.get("/api/v1/monitors/{monitor_id}", response_model=monitors_v1.Monitor)
+async def get_monitor(monitor_id: int):
+    """ get a single monitor and summary """
+    return await mon_repo.get_monitor_with_summary(database, monitor_id)
+     
+
+
 @app.post("/api/v1/monitors", response_model=monitors_v1.Monitor)
 async def new_monitor(monitor: monitors_v1.MonitorRequest):
     """ create a new monitors """
     monitors = await mon_repo.create_monitor(database, monitor)
     return monitors
+
+
 
 @app.delete("/api/v1/monitors/{monitor_id}")
 async def delete_monitor(monitor_id: int):

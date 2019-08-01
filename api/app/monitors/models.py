@@ -16,7 +16,6 @@ class DailySummary(BaseModel):
     """ a summary of a day's worth of checks for an endpoint monitor """
     date: date
     num_ok: int
-    num_warn: int
     num_fail: int
 
 
@@ -26,7 +25,9 @@ class Monitor(BaseModel):
     name: str
     endpoint: str
     current_status: int = 1
+    last_failed: Optional[datetime]
     last_checked: Optional[datetime]
+    last_success: Optional[datetime]
     weekly: List[DailySummary] = []
 
     class Config:

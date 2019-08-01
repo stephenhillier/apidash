@@ -4,23 +4,24 @@
       <i
         class="status"
         :class="{
-          ok: status === stats.OK,
-          warning: status === stats.WARN,
-          error: status === stats.ERR
+          ok: monitor.current_status === 0,
+          warning: monitor.current_status === 1,
+          error: monitor.current_status === 2
         }"
       ></i
-      >{{ name }}
+      >{{ monitor.name }}
     </div>
-    <div class="w-full lg:w-3/6 bg-white">{{ endpoint }}</div>
+    <div class="w-full lg:w-3/6 bg-white">{{ monitor.endpoint }}</div>
     <div class="w-full lg:w-1/6 bg-white text-center">
       <i
-        v-for="(s, i) in dailyStatus"
+        v-for="(s, i) in monitor.weekly"
         :key="i"
         class="status-box"
         :class="{
-          ok: s === stats.OK,
-          warning: s === stats.WARN,
-          error: s === stats.ERR
+          noCheck: s.num_fail + s.num_ok === 0,
+          ok: s.num_fail === stats.OK && s.num_fail + s.num_ok > 0,
+          warning: s.num_fail === stats.WARN && s.num_fail + s.num_ok > 0,
+          error: s.num_fail >= stats.ERR && s.num_fail + s.num_ok > 0
         }"
       ></i>
     </div>
@@ -40,10 +41,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class MonitorListCard extends Vue {
-  @Prop(Number) readonly id!: number;
-  @Prop(Number) readonly status!: number;
-  @Prop(String) readonly name!: string;
-  @Prop(String) readonly endpoint!: string;
+  @Prop(Object) readonly monitor!: any;
   stats = {
     OK: 0,
     WARN: 1,
@@ -52,7 +50,7 @@ export default class MonitorListCard extends Vue {
   dailyStatus = [0, 0, 1, 0, 2, 0, 0];
   handleDelete() {
     axios
-      .delete(`http://localhost:8000/api/v1/monitors/${this.id}`)
+      .delete(`http://localhost:8000/api/v1/monitors/${this.monitor.id}`)
       .then(r => {
         this.$emit("mon:deleted");
       })
@@ -89,6 +87,10 @@ export default class MonitorListCard extends Vue {
   }
 }
 .status-box {
+  &.noCheck:before {
+    background-color: #c7c7c7;
+    border-color: #a3a3a3;
+  }
   &.ok:before {
     background-color: #94e185;
     border-color: #78d965;

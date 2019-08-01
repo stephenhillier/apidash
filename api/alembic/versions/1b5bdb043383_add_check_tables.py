@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('check_time', sa.DateTime(), nullable=False),
     sa.Column('status_code', sa.Integer(), nullable=False),
     sa.Column('schema_valid', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['monitor_id'], ['monitor.id'], ),
+    sa.ForeignKeyConstraint(['monitor_id'], ['monitor.id'], ondelete="CASCADE"),
     sa.PrimaryKeyConstraint('id')
     )
     op.add_column('monitor', sa.Column('create_time', sa.DateTime(), nullable=False))

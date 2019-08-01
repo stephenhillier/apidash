@@ -121,10 +121,7 @@
 
       <template v-for="(monitor, i) in monitors">
         <monitor-list-card
-          :id="monitor.id"
-          :name="monitor.name"
-          :status="monitor.status"
-          :endpoint="monitor.endpoint"
+          :monitor="monitor"
           :key="i"
           @mon:deleted="handleMonitorDeleted"
         ></monitor-list-card>
