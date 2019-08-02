@@ -59,7 +59,7 @@ func main() {
 func (app *App) monitor() {
 	var monitors []*Monitor
 	var err error
-	var results []result
+	var results []*result
 	for {
 		time.Sleep(5 * time.Second)
 		monitors, err = app.DB.getMonitors()
@@ -71,6 +71,7 @@ func (app *App) monitor() {
 		}
 		results = makeRequests(monitors, 5)
 		log.Println(results)
+		app.storeResults(results)
 		break
 	}
 }

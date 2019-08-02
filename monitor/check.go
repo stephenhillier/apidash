@@ -15,7 +15,7 @@ type result struct {
 	CheckTime  time.Time `sql:"check_time"`
 }
 
-func makeRequests(monitors []*Monitor, limit int) []result {
+func makeRequests(monitors []*Monitor, limit int) []*result {
 	// using code from https://gist.github.com/montanaflynn/ea4b92ed640f790c4b9cee36046a5383
 
 	semChan := make(chan struct{}, limit)
@@ -38,7 +38,12 @@ func makeRequests(monitors []*Monitor, limit int) []result {
 
 			// get result and add it to resultsChan
 			res, err := http.Get(m.Endpoint)
-			result := &result{i, mon.ID, res.StatusCode, err, time.Now().UTC()}
+			result := &result{
+				index:      i,
+				MonitorID:  m.ID,
+				StatusCode: res.StatusCode,
+				err:        err,
+				CheckTime:  time.Now().UTC()}
 			resultsChan <- result
 
 			// remove one from semChan
@@ -46,11 +51,11 @@ func makeRequests(monitors []*Monitor, limit int) []result {
 		}(i, mon)
 	}
 
-	var results []result
+	var results []*result
 
 	for {
 		result := <-resultsChan
-		results = append(results, *result)
+		results = append(results, result)
 
 		if len(results) == len(monitors) {
 			break
@@ -60,7 +65,12 @@ func makeRequests(monitors []*Monitor, limit int) []result {
 	return results
 }
 
-func (app *App) storeResults(results []result) error {
-	_, err := app.DB.Model(results...).Insert()
-	return nil
+func (app *App) storeResults(results []*result) error {
+	log.Println("storing results")
+	res, err := app.DB.Model(&results).Insert()
+	log.Println(res)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
 }
