@@ -2,20 +2,23 @@ version: '3.3'
 services:
   backend: 
     build: 
-      context: .
+      context: api
       args: 
         env: dev
-    networks: 
-      default: 
-        aliases: 
-          - apidash
     command: /app/start-reload.sh
     volumes:
-      - .:/app
+      - ./api:/app
     env_file:
       - env-postgres.env
     ports:
       - '8000:8000'
+    depends_on: 
+      - db
+  monitor:
+    build:
+      context: monitor
+    env_file:
+      - env-postgres.env
     depends_on: 
       - db
   db:

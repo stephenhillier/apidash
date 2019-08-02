@@ -14,6 +14,9 @@ import "@/assets/tailwind.css";
 
 // Vue.component('font-awesome-icon', fontawesome.FontAwesomeIcon);
 
+const VTooltip = require("v-tooltip");
+Vue.use(VTooltip);
+
 Vue.config.productionTip = false;
 
 new Vue({

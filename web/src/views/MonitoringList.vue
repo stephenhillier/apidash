@@ -108,11 +108,9 @@
     <div v-if="addMonitor" class="px-4 md:px-0">
       <AddMonitor @mon:created="handleMonitorAdded"></AddMonitor>
     </div>
-    <div class="px-4 md:px-0">
+    <div class="px-4 md:px-0 text-gray-900">
       <div class="lg:flex mt-2 px-4 md:px-0">
-        <div class="w-full lg:w-4/6 bg-white text-lg">
-          jsonplaceholder.typicode.com
-        </div>
+        <div class="w-full lg:w-4/6 bg-white text-lg"></div>
         <div class="w-full lg:w-1/6 bg-white text-sm text-center">
           Last 7 days
         </div>
