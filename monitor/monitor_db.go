@@ -7,12 +7,12 @@ import (
 
 // Monitor represents an endpoint that is regularly checked
 type Monitor struct {
-	ID          int64     `db:"id"`
-	Name        string    `db:"name"`
-	Endpoint    string    `db:"endpoint"`
-	CreateTime  time.Time `db:"create_time"`
-	ExpireTime  NullDate  `db:"expire_time"`
-	LastChecked NullDate  `db:"last_checked"`
+	ID          int64     `sql:"id"`
+	Name        string    `sql:"name"`
+	Endpoint    string    `sql:"endpoint"`
+	CreateTime  time.Time `sql:"create_time"`
+	ExpireTime  NullDate  `sql:"expire_time"`
+	LastChecked NullDate  `sql:"last_checked"`
 }
 
 func (repo *Datastore) getMonitors() ([]*Monitor, error) {
@@ -28,7 +28,7 @@ func (repo *Datastore) getMonitors() ([]*Monitor, error) {
 
 	monitors := []*Monitor{}
 
-	err := repo.Select(&monitors, query)
+	_, err := repo.Query(&monitors, query)
 	log.Printf("Found %v monitors needing a new test", len(monitors))
 	return monitors, err
 }

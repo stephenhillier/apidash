@@ -4,23 +4,20 @@ import (
 	"log"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
-	// register postgres driver
-	"github.com/lib/pq"
+	"github.com/go-pg/pg/v9"
 )
 
 // Datastore represents a database with an open connection
 type Datastore struct {
-	*sqlx.DB
+	*pg.DB
 }
 
-// NewDatastore takes a sqlx.DB handle and returns a
+// NewDatastore takes a pg.DB handle and returns a
 // Datastore. It blocks until the DB is ready.
-func NewDatastore(db *sqlx.DB) (*Datastore, error) {
+func NewDatastore(db *pg.DB) (*Datastore, error) {
 	for {
 		var x int
-		err := db.Get(&x, "SELECT 1")
+		_, err := db.Query(&x, "SELECT 1")
 		if err == nil {
 			break
 		}
@@ -35,5 +32,5 @@ func NewDatastore(db *sqlx.DB) (*Datastore, error) {
 
 // NullDate is a nullable date value (for use with PostgreSQL)
 type NullDate struct {
-	pq.NullTime
+	pg.NullTime
 }

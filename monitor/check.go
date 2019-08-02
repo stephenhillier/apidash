@@ -3,12 +3,16 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 )
 
 type result struct {
 	index      int
-	statusCode int
+	tableName  struct{} `sql:"check_status"`
+	MonitorID  int64    `sql:"monitor_id"`
+	StatusCode int      `sql:"status_code"`
 	err        error
+	CheckTime  time.Time `sql:"check_time"`
 }
 
 func makeRequests(monitors []*Monitor, limit int) []result {
@@ -34,7 +38,7 @@ func makeRequests(monitors []*Monitor, limit int) []result {
 
 			// get result and add it to resultsChan
 			res, err := http.Get(m.Endpoint)
-			result := &result{i, res.StatusCode, err}
+			result := &result{i, mon.ID, res.StatusCode, err, time.Now().UTC()}
 			resultsChan <- result
 
 			// remove one from semChan
@@ -54,4 +58,9 @@ func makeRequests(monitors []*Monitor, limit int) []result {
 	}
 
 	return results
+}
+
+func (app *App) storeResults(results []result) error {
+	_, err := app.DB.Model(results...).Insert()
+	return nil
 }

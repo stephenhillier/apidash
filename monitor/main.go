@@ -7,7 +7,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/go-pg/pg/v9"
+
 	"github.com/namsral/flag"
 )
 
@@ -25,10 +26,14 @@ func main() {
 	flag.StringVar(&dbport, "dbport", "5432", "database service port")
 	flag.StringVar(&dbsslmode, "dbsslmode", "disable", "database ssl mode")
 	flag.Parse()
-	db, err := sqlx.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=%s", dbuser, dbpass, dbhost, dbport, dbname, dbsslmode))
-	if err != nil {
-		log.Panic("Could not start database driver")
-	}
+
+	db := pg.Connect(&pg.Options{
+		Addr:     fmt.Sprintf("%s:%s", dbhost, dbport),
+		User:     dbuser,
+		Password: dbpass,
+		Database: dbname,
+	})
+	defer db.Close()
 
 	datastore, err := NewDatastore(db)
 	if err != nil {
