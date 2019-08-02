@@ -61,7 +61,7 @@ func (app *App) monitor() {
 	var err error
 	var results []*result
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 		monitors, err = app.DB.getMonitors()
 		if err != nil {
 			log.Println(err)
@@ -70,8 +70,6 @@ func (app *App) monitor() {
 			continue
 		}
 		results = makeRequests(monitors, 5)
-		log.Println(results)
 		app.storeResults(results)
-		break
 	}
 }

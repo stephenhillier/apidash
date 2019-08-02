@@ -66,7 +66,7 @@ func makeRequests(monitors []*Monitor, limit int) []*result {
 }
 
 func (app *App) storeResults(results []*result) error {
-	log.Println("storing results")
+	log.Printf("storing %s results", len(results))
 	res, err := app.DB.Model(&results).Insert()
 	log.Println(res)
 	if err != nil {
