@@ -74,3 +74,14 @@ async def delete_monitor(monitor_id: int):
     await mon_repo.delete_monitor(database, monitor_id)
 
     return Response(status_code=204, content=b"")
+
+@app.get("/api/v1/status/{status}")
+def return_status(status: int):
+    if status >= 400:
+        raise HTTPException(status_code=status, detail="Monitor not found")
+    return Response(status_code=status, content=b"")
+
+@app.get("/api/v1/monitors/{monitor_id}/checks")
+async def get_monitor_checks_data(monitor_id: int):
+    """ get a single monitor and summary """
+    return await mon_repo.get_monitor_status_timeseries(database, monitor_id)

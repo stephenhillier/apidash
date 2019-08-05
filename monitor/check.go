@@ -10,7 +10,7 @@ type result struct {
 	index      int
 	tableName  struct{} `sql:"check_status"`
 	MonitorID  int64    `sql:"monitor_id"`
-	StatusCode int      `sql:"status_code"`
+	StatusCode int      `pg:",use_zero"`
 	err        error
 	CheckTime  time.Time `sql:"check_time"`
 }
@@ -38,10 +38,20 @@ func makeRequests(monitors []*Monitor, limit int) []*result {
 
 			// get result and add it to resultsChan
 			res, err := http.Get(m.Endpoint)
+
+			// in the data model, we will assume a status code of 1 means that we were not
+			// able to assign a valid HTTP status code for whatever reason. Normally
+			// this is because the server was unreachable, URL not valid, etc.
+			// Normal HTTP errors will have a valid status code in the 400 or 500 range.
+			// Status code 1 still counts as an error for checking the health of an endpoint.
+			statusCode := 1
+			if err == nil && res != nil {
+				statusCode = res.StatusCode
+			}
 			result := &result{
 				index:      i,
 				MonitorID:  m.ID,
-				StatusCode: res.StatusCode,
+				StatusCode: statusCode,
 				err:        err,
 				CheckTime:  time.Now().UTC()}
 			resultsChan <- result
@@ -66,9 +76,7 @@ func makeRequests(monitors []*Monitor, limit int) []*result {
 }
 
 func (app *App) storeResults(results []*result) error {
-	log.Printf("storing %s results", len(results))
-	res, err := app.DB.Model(&results).Insert()
-	log.Println(res)
+	_, err := app.DB.Model(&results).Insert()
 	if err != nil {
 		log.Println(err)
 	}

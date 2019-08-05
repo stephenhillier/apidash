@@ -12,6 +12,10 @@ services:
       - env-postgres.env
     ports:
       - '8000:8000'
+    networks:
+      default:
+        aliases:
+        - 'apidash.dev'
     depends_on: 
       - db
   monitor:

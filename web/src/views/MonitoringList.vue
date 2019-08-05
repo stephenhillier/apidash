@@ -4,7 +4,7 @@
       <!--Console Content-->
 
       <div class="flex flex-wrap">
-        <div class="w-full md:w-1/2 xl:w-1/4 p-3">
+        <div class="w-full lg:w-1/3 p-3">
           <!--Metric Card-->
           <div class="bg-white border rounded shadow p-2">
             <div class="flex flex-row items-center">
@@ -16,7 +16,7 @@
           </div>
           <!--/Metric Card-->
         </div>
-        <div class="w-full md:w-1/2 xl:w-1/4 p-3">
+        <div class="w-full lg:w-1/3 p-3">
           <!--Metric Card-->
           <div class="bg-white border rounded shadow p-2">
             <div class="flex flex-row items-center">
@@ -25,7 +25,7 @@
                 <h3 class="text-3xl">
                   {{
                     monitors.filter(item => {
-                      return item.status === 0;
+                      return item.current_status === 0;
                     }).length
                   }}
                 </h3>
@@ -34,7 +34,7 @@
           </div>
           <!--/Metric Card-->
         </div>
-        <div class="w-full md:w-1/2 xl:w-1/4 p-3">
+        <div class="w-full lg:w-1/3 p-3">
           <!--Metric Card-->
           <div class="bg-white border rounded shadow p-2">
             <div class="flex flex-row items-center">
@@ -43,24 +43,10 @@
                 <h3 class="text-3xl">
                   {{
                     monitors.filter(item => {
-                      return item.status !== 0;
+                      return item.current_status !== 0;
                     }).length
                   }}
                 </h3>
-              </div>
-            </div>
-          </div>
-          <!--/Metric Card-->
-        </div>
-        <div class="w-full md:w-1/2 xl:w-1/4 p-3">
-          <!--Metric Card-->
-          <div class="bg-white border rounded shadow p-2">
-            <div class="flex flex-row items-center">
-              <div class="flex-1 text-center">
-                <h5 class="uppercase text-grey">
-                  Days since last outage
-                </h5>
-                <h3 class="text-3xl">2 days</h3>
               </div>
             </div>
           </div>
@@ -83,7 +69,7 @@
               ><span class="pb-1 md:pb-0 text-sm">All Monitors</span>
             </a>
           </li>
-          <li class="mr-6 my-2 md:my-0">
+          <!-- <li class="mr-6 my-2 md:my-0">
             <a
               href="#"
               class="block py-1 md:py-3 pl-1 align-middle text-gray-500 no-underline hover:text-gray-900"
@@ -91,7 +77,7 @@
               <i class="fa fa-exclamation-triangle fa-fw mr-3"></i
               ><span class="pb-1 md:pb-0 text-sm">Unhealthy Monitors</span>
             </a>
-          </li>
+          </li> -->
         </ul>
         <div class="relative pull-right pl-4 px-4 md:px-0">
           <div>
@@ -110,7 +96,11 @@
     </div>
     <div class="px-4 md:px-0 text-gray-900">
       <div class="lg:flex mt-2 px-4 md:px-0">
-        <div class="w-full lg:w-4/6 bg-white text-lg"></div>
+        <div class="w-full lg:w-2/6 bg-white text-lg"></div>
+        <div class="w-full lg:w-1/6 bg-white text-lg"></div>
+        <div class="w-full lg:w-1/6 bg-white text-sm text-right">
+          Last check
+        </div>
         <div class="w-full lg:w-1/6 bg-white text-sm text-center">
           Last 7 days
         </div>
@@ -120,6 +110,7 @@
       <template v-for="(monitor, i) in monitors">
         <monitor-list-card
           :monitor="monitor"
+          :now="now"
           :key="i"
           @mon:deleted="handleMonitorDeleted"
         ></monitor-list-card>
@@ -133,7 +124,7 @@ import axios from "axios";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import MonitorListCard from "@/components/MonitorListCard.vue";
 import AddMonitor from "@/components/AddMonitor.vue";
-
+import moment from "moment";
 @Component({
   components: {
     "monitor-list-card": MonitorListCard,
@@ -143,6 +134,9 @@ import AddMonitor from "@/components/AddMonitor.vue";
 export default class MonitoringHome extends Vue {
   addMonitor = false;
   monitors = [];
+  monitorInterval = 0;
+  nowInterval = 0;
+  now = new Date();
 
   handleMonitorAdded() {
     this.addMonitor = false;
@@ -164,6 +158,17 @@ export default class MonitoringHome extends Vue {
 
   created() {
     this.fetchMonitors();
+    this.monitorInterval = setInterval(() => {
+      this.fetchMonitors();
+    }, 15000);
+    this.nowInterval = setInterval(() => {
+      this.now = new Date();
+    }, 10000);
+  }
+
+  beforeDestroy() {
+    clearInterval(this.monitorInterval);
+    clearInterval(this.nowInterval);
   }
 }
 </script>

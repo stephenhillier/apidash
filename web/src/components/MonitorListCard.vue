@@ -11,8 +11,42 @@
       ></i
       >{{ monitor.name }}
     </div>
-    <div class="w-full lg:w-3/6 bg-white text-gray-900">
+    <div class="w-full lg:w-2/6 bg-white text-gray-900">
       {{ monitor.endpoint }}
+    </div>
+    <div class="w-full lg:w-1/6 bg-white">
+      <svg
+        v-if="monitor.last_check !== 0"
+        xmlns="http://www.w3.org/2000/svg"
+        x="0px"
+        y="0px"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        style=" fill:#c9404d;"
+        class="float-right"
+      >
+        <path
+          style="line-height:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;block-progression:tb;isolation:auto;mix-blend-mode:normal"
+          d="M 12 3.0292969 C 11.436813 3.0292969 10.873869 3.2917399 10.558594 3.8164062 L 1.7617188 18.451172 C 1.1134854 19.529186 1.94287 21 3.2011719 21 L 20.796875 21 C 22.054805 21 22.886515 19.529186 22.238281 18.451172 L 13.441406 3.8164062 C 13.126131 3.29174 12.563187 3.0292969 12 3.0292969 z M 12 5.2988281 L 20.236328 19 L 3.7636719 19 L 12 5.2988281 z M 11 9 L 11 14 L 13 14 L 13 9 L 11 9 z M 11 16 L 11 18 L 13 18 L 13 16 L 11 16 z"
+          font-weight="400"
+          font-family="sans-serif"
+          white-space="normal"
+          overflow="visible"
+        ></path>
+      </svg>
+    </div>
+    <div class="w-full lg:w-1/6 bg-white text-center text-sm">
+      <i
+        class="status"
+        :class="{
+          noCheck: monitor.last_check === null,
+          ok: monitor.last_check === 0,
+          warning: monitor.last_check === 1,
+          error: monitor.last_check === 2
+        }"
+      ></i
+      >{{ lastChecked }}
     </div>
     <div class="w-full lg:w-1/6 bg-white text-center">
       <i
@@ -42,11 +76,13 @@
 </template>
 <script lang="ts">
 import axios from "axios";
+import moment from "moment";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class MonitorListCard extends Vue {
   @Prop(Object) readonly monitor!: any;
+  @Prop(Date) readonly now!: Date;
   stats = {
     OK: 0,
     WARN: 1,
@@ -60,6 +96,19 @@ export default class MonitorListCard extends Vue {
         this.$emit("mon:deleted");
       })
       .catch(e => {});
+  }
+  get lastChecked() {
+    if (!this.monitor.last_checked) {
+      return "Never";
+    }
+    return this.lastCheckedUTC.from(this.nowWithJitter);
+  }
+  get lastCheckedUTC() {
+    return moment.utc(this.monitor.last_checked);
+  }
+  get nowWithJitter() {
+    // account for offset between server and client
+    return moment(this.now).add(1, "seconds");
   }
 }
 </script>
@@ -175,6 +224,10 @@ export default class MonitorListCard extends Vue {
   }
 }
 .status {
+  &.noCheck:before {
+    background-color: #c7c7c7;
+    border-color: #a3a3a3;
+  }
   &.ok:before {
     background-color: #94e185;
     border-color: #78d965;

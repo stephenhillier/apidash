@@ -22,7 +22,7 @@ func (repo *Datastore) getMonitors() ([]*Monitor, error) {
 	MAX(ck.check_time) as last_checked
 	FROM monitor
 	LEFT JOIN check_status AS ck ON ck.monitor_id = monitor.id
-	GROUP BY monitor.id HAVING coalesce(MAX(ck.check_time) < date_trunc('minute', now()) - interval '1m', true) = true
+	GROUP BY monitor.id HAVING coalesce(MAX(ck.check_time) < date_trunc('minute', now()) - interval '4m', true) = true
 	LIMIT 5
 	`
 

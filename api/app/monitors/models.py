@@ -25,6 +25,7 @@ class Monitor(BaseModel):
     name: str
     endpoint: str
     current_status: int = 1
+    last_check: int = 1
     last_failed: Optional[datetime]
     last_checked: Optional[datetime]
     last_success: Optional[datetime]

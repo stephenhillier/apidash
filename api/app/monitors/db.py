@@ -11,6 +11,7 @@ logger = logging.getLogger("api")
 
 metadata = MetaData()
 
+
 class Monitor(BaseTable):
     """ a monitor represents a re-occuring check against an endpoint """
     __tablename__ = "monitor"
@@ -18,9 +19,12 @@ class Monitor(BaseTable):
     id = Column(BigInteger, primary_key=True)
     name = Column(String, nullable=False)
     endpoint = Column(String, nullable=False)
-    create_time = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+    create_time = Column(DateTime, nullable=False,
+                         default=datetime.datetime.utcnow)
     expire_time = Column(DateTime, nullable=True)
-    checks = relationship("Check", back_populates="monitor", cascade="save-update, merge, delete, delete-orphan")
+    checks = relationship("Check", back_populates="monitor",
+                          cascade="save-update, merge, delete, delete-orphan")
+
 
 class Check(BaseTable):
     """ a check is a single check request made for a monitor """
@@ -28,13 +32,15 @@ class Check(BaseTable):
 
     id = Column(BigInteger, primary_key=True)
     monitor_id = Column(BigInteger, ForeignKey('monitor.id'), nullable=False)
-    check_time = Column(DateTime, nullable=False)
-    status_code = Column(Integer, nullable=False)
+    check_time = Column(DateTime, nullable=False, index=True)
+    status_code = Column(Integer, nullable=False, default=0)
     schema_valid = Column(Boolean)  # can be null if no schema defined
     monitor = relationship("Monitor", back_populates="checks")
 
+
 monitor = Monitor.__table__
 check = Check.__table__
+
 
 async def get_summaries(db: Database, monitor_id: int):
     """ get summaries for a group of monitors """
@@ -44,7 +50,7 @@ async def get_summaries(db: Database, monitor_id: int):
         FROM (SELECT now()::date -6+d AS day FROM generate_series (0, 6) d) d
         LEFT JOIN (
         SELECT check_time::date AS day,
-            count(*) filter (where status_code > 299) as num_fail,
+            count(*) filter (where status_code > 299 or status_code < 100) as num_fail,
             count(*) filter (where status_code >= 200 and status_code <= 299 ) as num_ok
         FROM check_status
         WHERE check_time >= date_trunc('day', now()) - interval '6d'
@@ -53,12 +59,14 @@ async def get_summaries(db: Database, monitor_id: int):
         ) e USING (day);
     """
 
-    values = { "monitor_id": monitor_id }
+    values = {"monitor_id": monitor_id}
     summary_rows = await db.fetch_all(summary, values=values)
 
-    weekly = [monitors_v1.DailySummary(**dict(x), date=dict(x).get("day")) for x in summary_rows]
+    weekly = [monitors_v1.DailySummary(
+        **dict(x), date=dict(x).get("day")) for x in summary_rows]
 
     return weekly
+
 
 async def create_monitor(db: Database, mon: monitors_v1.Monitor) -> monitors_v1.Monitor:
     """ creates a new monitor in the database """
@@ -83,7 +91,12 @@ async def list_monitors(db: Database):
             WHEN MAX(ck.check_time) filter (where ck.status_code > 299) = MAX(ck.check_time) THEN 2
             WHEN MAX(ck.check_time) filter (where ck.status_code > 299) > date_trunc('day', now()) - interval '10m' THEN 1
             ELSE 0
-        END AS current_status
+        END AS current_status,
+        CASE
+            WHEN MAX(ck.check_time) = NULL THEN -1
+            WHEN MAX(ck.check_time) filter (where ck.status_code >= 200 and ck.status_code < 300) = MAX(ck.check_time) THEN 0
+            ELSE 2
+        END AS last_check
         FROM monitor
         LEFT JOIN check_status AS ck ON ck.monitor_id = monitor.id
         GROUP BY monitor.id
@@ -104,3 +117,18 @@ async def get_monitor(db: Database, monitor_id: int):
     """ get single monitor """
     query = monitor.select().where(monitor.c.id == monitor_id)
     return await db.fetch_one(query)
+
+
+async def get_monitor_status_timeseries(
+    db: Database,
+    monitor_id: int,
+    start_time: datetime.datetime = datetime.datetime.utcnow() - datetime.timedelta(days=7),
+    end_time: datetime.datetime = datetime.datetime.utcnow()
+):
+    """ get the time series data for a single monitor """
+    query = check.select() \
+        .where(
+            check.c.monitor_id == monitor_id,
+            check.c.check_time > start_time,
+            check.c.check_time < end_time)
+    return await db.fetch_all(query)
