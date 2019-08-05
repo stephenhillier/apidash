@@ -74,11 +74,3 @@ func makeRequests(monitors []*Monitor, limit int) []*result {
 
 	return results
 }
-
-func (app *App) storeResults(results []*result) error {
-	_, err := app.DB.Model(&results).Insert()
-	if err != nil {
-		log.Println(err)
-	}
-	return err
-}

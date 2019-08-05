@@ -46,12 +46,11 @@ async def list_monitors():
     return monitors
 
 
-@app.get("/api/v1/monitors/{monitor_id}", response_model=monitors_v1.Monitor)
+@app.get("/api/v1/monitors/{monitor_id}")
 async def get_monitor(monitor_id: int):
     """ get a single monitor and summary """
-    return await mon_repo.get_monitor_with_summary(database, monitor_id)
+    return await mon_repo.get_monitor_status_timeseries(database, monitor_id)
      
-
 
 @app.post("/api/v1/monitors", response_model=monitors_v1.Monitor)
 async def new_monitor(monitor: monitors_v1.MonitorRequest):

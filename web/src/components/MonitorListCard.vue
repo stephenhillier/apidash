@@ -1,76 +1,88 @@
 <template>
-  <div class="lg:flex mt-2 bg-white border rounded shadow p-2">
-    <div class="w-full lg:w-1/6 bg-white text-gray-900">
-      <i
-        class="status"
-        :class="{
-          ok: monitor.current_status === 0,
-          warning: monitor.current_status === 1,
-          error: monitor.current_status === 2
-        }"
-      ></i
-      >{{ monitor.name }}
+  <div class="bg-white border rounded shadow mt-2">
+    <div class="lg:flex p-2">
+      <div class="w-full lg:w-1/6 bg-white text-gray-900">
+        <i
+          class="status"
+          :class="{
+            ok: monitor.current_status === 0,
+            warning: monitor.current_status === 1,
+            error: monitor.current_status === 2
+          }"
+        ></i
+        >{{ monitor.name }}
+      </div>
+      <div class="w-full lg:w-2/6 bg-white text-gray-900">
+        {{ monitor.endpoint }}
+      </div>
+      <div class="w-full lg:w-1/6 bg-white">
+        <svg
+          v-if="monitor.last_check !== 0"
+          xmlns="http://www.w3.org/2000/svg"
+          x="0px"
+          y="0px"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          style=" fill:#c9404d;"
+          class="float-right"
+        >
+          <path
+            style="line-height:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;block-progression:tb;isolation:auto;mix-blend-mode:normal"
+            d="M 12 3.0292969 C 11.436813 3.0292969 10.873869 3.2917399 10.558594 3.8164062 L 1.7617188 18.451172 C 1.1134854 19.529186 1.94287 21 3.2011719 21 L 20.796875 21 C 22.054805 21 22.886515 19.529186 22.238281 18.451172 L 13.441406 3.8164062 C 13.126131 3.29174 12.563187 3.0292969 12 3.0292969 z M 12 5.2988281 L 20.236328 19 L 3.7636719 19 L 12 5.2988281 z M 11 9 L 11 14 L 13 14 L 13 9 L 11 9 z M 11 16 L 11 18 L 13 18 L 13 16 L 11 16 z"
+            font-weight="400"
+            font-family="sans-serif"
+            white-space="normal"
+            overflow="visible"
+          ></path>
+        </svg>
+      </div>
+      <div class="w-full lg:w-1/6 bg-white text-center text-sm">
+        <i
+          class="status"
+          :class="{
+            noCheck: monitor.last_check === null,
+            ok: monitor.last_check === 0,
+            warning: monitor.last_check === 1,
+            error: monitor.last_check === 2
+          }"
+        ></i
+        >{{ lastChecked }}
+      </div>
+      <div class="w-full lg:w-1/6 bg-white text-center">
+        <i
+          v-for="(s, i) in monitor.weekly"
+          :key="i"
+          class="status-box"
+          v-tooltip.top-center="
+            `Date: ${s.date}, Successful: ${s.num_ok}, Errors: ${s.num_fail}`
+          "
+          :class="{
+            noCheck: s.num_fail + s.num_ok === 0,
+            ok: s.num_fail === stats.OK && s.num_fail + s.num_ok > 0,
+            warning: s.num_fail === stats.WARN && s.num_fail + s.num_ok > 0,
+            error: s.num_fail >= stats.ERR && s.num_fail + s.num_ok > 0
+          }"
+        ></i>
+      </div>
+      <div class="w-full lg:w-1/6 bg-white text-right">
+        <a
+          href="#"
+          @click.prevent="toggleExpandCard"
+          class="inline-block text-sm leading-none text-indigo-500 hover:text-indigo-700"
+          >More info</a
+        >
+
+        <a
+          href="#"
+          @click.prevent="handleDelete"
+          class="inline-block text-sm leading-none text-indigo-500 hover:text-indigo-700 ml-3"
+          >Delete</a
+        >
+      </div>
     </div>
-    <div class="w-full lg:w-2/6 bg-white text-gray-900">
-      {{ monitor.endpoint }}
-    </div>
-    <div class="w-full lg:w-1/6 bg-white">
-      <svg
-        v-if="monitor.last_check !== 0"
-        xmlns="http://www.w3.org/2000/svg"
-        x="0px"
-        y="0px"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        style=" fill:#c9404d;"
-        class="float-right"
-      >
-        <path
-          style="line-height:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;block-progression:tb;isolation:auto;mix-blend-mode:normal"
-          d="M 12 3.0292969 C 11.436813 3.0292969 10.873869 3.2917399 10.558594 3.8164062 L 1.7617188 18.451172 C 1.1134854 19.529186 1.94287 21 3.2011719 21 L 20.796875 21 C 22.054805 21 22.886515 19.529186 22.238281 18.451172 L 13.441406 3.8164062 C 13.126131 3.29174 12.563187 3.0292969 12 3.0292969 z M 12 5.2988281 L 20.236328 19 L 3.7636719 19 L 12 5.2988281 z M 11 9 L 11 14 L 13 14 L 13 9 L 11 9 z M 11 16 L 11 18 L 13 18 L 13 16 L 11 16 z"
-          font-weight="400"
-          font-family="sans-serif"
-          white-space="normal"
-          overflow="visible"
-        ></path>
-      </svg>
-    </div>
-    <div class="w-full lg:w-1/6 bg-white text-center text-sm">
-      <i
-        class="status"
-        :class="{
-          noCheck: monitor.last_check === null,
-          ok: monitor.last_check === 0,
-          warning: monitor.last_check === 1,
-          error: monitor.last_check === 2
-        }"
-      ></i
-      >{{ lastChecked }}
-    </div>
-    <div class="w-full lg:w-1/6 bg-white text-center">
-      <i
-        v-for="(s, i) in monitor.weekly"
-        :key="i"
-        class="status-box"
-        v-tooltip.top-center="
-          `Date: ${s.date}, Successful: ${s.num_ok}, Errors: ${s.num_fail}`
-        "
-        :class="{
-          noCheck: s.num_fail + s.num_ok === 0,
-          ok: s.num_fail === stats.OK && s.num_fail + s.num_ok > 0,
-          warning: s.num_fail === stats.WARN && s.num_fail + s.num_ok > 0,
-          error: s.num_fail >= stats.ERR && s.num_fail + s.num_ok > 0
-        }"
-      ></i>
-    </div>
-    <div class="w-full lg:w-1/6 bg-white text-right">
-      <a
-        href="#"
-        @click.prevent="handleDelete"
-        class="inline-block text-sm leading-none text-indigo-500 hover:text-indigo-700"
-        >Delete</a
-      >
+    <div v-if="expanded">
+      <MonitorDetails :monitor="monitor"></MonitorDetails>
     </div>
   </div>
 </template>
@@ -78,8 +90,13 @@
 import axios from "axios";
 import moment from "moment";
 import { Component, Prop, Vue } from "vue-property-decorator";
+import MonitorDetails from "./MonitorDetails.vue";
 
-@Component
+@Component({
+  components: {
+    MonitorDetails
+  }
+})
 export default class MonitorListCard extends Vue {
   @Prop(Object) readonly monitor!: any;
   @Prop(Date) readonly now!: Date;
@@ -89,6 +106,7 @@ export default class MonitorListCard extends Vue {
     ERR: 2
   };
   dailyStatus = [0, 0, 1, 0, 2, 0, 0];
+  expanded = false;
   handleDelete() {
     axios
       .delete(`http://localhost:8000/api/v1/monitors/${this.monitor.id}`)
@@ -109,6 +127,9 @@ export default class MonitorListCard extends Vue {
   get nowWithJitter() {
     // account for offset between server and client
     return moment(this.now).add(1, "seconds");
+  }
+  toggleExpandCard() {
+    this.expanded = !this.expanded;
   }
 }
 </script>

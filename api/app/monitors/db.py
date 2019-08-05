@@ -128,7 +128,7 @@ async def get_monitor_status_timeseries(
     """ get the time series data for a single monitor """
     query = check.select() \
         .where(
-            check.c.monitor_id == monitor_id,
-            check.c.check_time > start_time,
-            check.c.check_time < end_time)
+            (check.c.monitor_id == monitor_id) &
+            (check.c.check_time > start_time) &
+            (check.c.check_time < end_time))
     return await db.fetch_all(query)

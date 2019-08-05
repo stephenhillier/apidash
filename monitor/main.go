@@ -57,19 +57,11 @@ func main() {
 }
 
 func (app *App) monitor() {
-	var monitors []*Monitor
-	var err error
-	var results []*result
 	for {
 		time.Sleep(10 * time.Second)
-		monitors, err = app.DB.getMonitors()
+		_, err := app.DB.checkMonitors()
 		if err != nil {
 			log.Println(err)
 		}
-		if len(monitors) == 0 {
-			continue
-		}
-		results = makeRequests(monitors, 5)
-		app.storeResults(results)
 	}
 }

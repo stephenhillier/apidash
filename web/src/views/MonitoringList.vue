@@ -94,7 +94,7 @@
     <div v-if="addMonitor" class="px-4 md:px-0">
       <AddMonitor @mon:created="handleMonitorAdded"></AddMonitor>
     </div>
-    <div class="px-4 md:px-0 text-gray-900">
+    <div class="px-4 pb-5 md:px-0 text-gray-900">
       <div class="lg:flex mt-2 px-4 md:px-0">
         <div class="w-full lg:w-2/6 bg-white text-lg"></div>
         <div class="w-full lg:w-1/6 bg-white text-lg"></div>
