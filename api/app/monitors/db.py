@@ -31,9 +31,10 @@ class Check(BaseTable):
     __tablename__ = "check_status"
 
     id = Column(BigInteger, primary_key=True)
-    monitor_id = Column(BigInteger, ForeignKey('monitor.id'), nullable=False)
+    monitor_id = Column(BigInteger, ForeignKey(
+        'monitor.id'), nullable=False, index=True)
     check_time = Column(DateTime, nullable=False, index=True)
-    status_code = Column(Integer, nullable=False, default=0)
+    status_code = Column(Integer, nullable=False, default=0, index=True)
     schema_valid = Column(Boolean)  # can be null if no schema defined
     monitor = relationship("Monitor", back_populates="checks")
 
@@ -122,10 +123,21 @@ async def get_monitor(db: Database, monitor_id: int):
 async def get_monitor_status_timeseries(
     db: Database,
     monitor_id: int,
-    start_time: datetime.datetime = datetime.datetime.utcnow() - datetime.timedelta(days=7),
-    end_time: datetime.datetime = datetime.datetime.utcnow()
+    start_time: datetime.datetime = None,
+    end_time: datetime.datetime = None
 ):
     """ get the time series data for a single monitor """
+
+    # start and end defaults.
+    # because they represent time, these need to be evaluated during the
+    # function's execution, not in the arg defaults (or else they will
+    # evaluate to the time when the app started up).
+    if start_time is None:
+        start_time = datetime.datetime.utcnow() - datetime.timedelta(days=7)
+
+    if end_time is None:
+        end_time = datetime.datetime.utcnow()
+
     query = check.select() \
         .where(
             (check.c.monitor_id == monitor_id) &

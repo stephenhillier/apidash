@@ -7,6 +7,7 @@ import databases
 from fastapi import FastAPI, HTTPException
 from starlette.responses import Response
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 from app.config import DATABASE_URI
 from app.monitors import db as mon_repo
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(GZipMiddleware)
+
 
 @app.on_event("startup")
 async def startup():
@@ -39,6 +42,7 @@ async def shutdown():
     """ run on shutdown """
     await database.disconnect()
 
+
 @app.get("/api/v1/monitors", response_model=List[monitors_v1.Monitor])
 async def list_monitors():
     """ list active monitors """
@@ -50,14 +54,13 @@ async def list_monitors():
 async def get_monitor(monitor_id: int):
     """ get a single monitor and summary """
     return await mon_repo.get_monitor_status_timeseries(database, monitor_id)
-     
+
 
 @app.post("/api/v1/monitors", response_model=monitors_v1.Monitor)
 async def new_monitor(monitor: monitors_v1.MonitorRequest):
     """ create a new monitors """
     monitors = await mon_repo.create_monitor(database, monitor)
     return monitors
-
 
 
 @app.delete("/api/v1/monitors/{monitor_id}")
@@ -74,11 +77,13 @@ async def delete_monitor(monitor_id: int):
 
     return Response(status_code=204, content=b"")
 
+
 @app.get("/api/v1/status/{status}")
 def return_status(status: int):
     if status >= 400:
         raise HTTPException(status_code=status, detail="Monitor not found")
     return Response(status_code=status, content=b"")
+
 
 @app.get("/api/v1/monitors/{monitor_id}/checks")
 async def get_monitor_checks_data(monitor_id: int):

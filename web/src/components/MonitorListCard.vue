@@ -5,9 +5,9 @@
         <i
           class="status"
           :class="{
-            ok: monitor.current_status === 0,
-            warning: monitor.current_status === 1,
-            error: monitor.current_status === 2
+            ok: monitor.last_check === 0,
+            warning: monitor.last_check === 1,
+            error: monitor.last_check === 2
           }"
         ></i
         >{{ monitor.name }}
@@ -73,12 +73,21 @@
           >More info</a
         >
 
-        <a
-          href="#"
-          @click.prevent="handleDelete"
-          class="inline-block text-sm leading-none text-indigo-500 hover:text-indigo-700 ml-3"
-          >Delete</a
-        >
+        <v-popover popoverClass="info" class="inline-block ml-3">
+          <button class="text-sm text-red-500">Delete</button>
+          <template slot="popover">
+            Are you sure? This will delete your monitor and ALL status checks!
+            <div>
+              <a
+                href="#"
+                v-close-popover
+                @click.prevent="handleDelete"
+                class="inline-block text-sm leading-none border rounded text-indigo-500 hover:text-indigo-700 bg-white mt-4 p-2"
+                >Confirm</a
+              >
+            </div>
+          </template>
+        </v-popover>
       </div>
     </div>
     <div v-if="expanded">
@@ -138,6 +147,23 @@ export default class MonitorListCard extends Vue {
 .tooltip {
   display: block !important;
   z-index: 10000;
+
+  &.info {
+    $color: #5a67d8 !important;
+
+    .tooltip-inner {
+      background: $color;
+      color: white !important;
+      padding: 24px;
+      border-radius: 5px;
+      box-shadow: 0 5px 30px rgba(black, 0.1) !important;
+      max-width: 250px;
+    }
+
+    .tooltip-arrow {
+      border-color: $color;
+    }
+  }
 
   .tooltip-inner {
     background: #d7dbfa;
