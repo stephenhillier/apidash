@@ -1,7 +1,7 @@
 """ database tables and operations for monitors """
 import datetime
 import logging
-from sqlalchemy import Column, BigInteger, String, DateTime, ForeignKey, MetaData, Integer, Boolean
+from sqlalchemy import Column, BigInteger, String, DateTime, ForeignKey, MetaData, Integer, Boolean, desc
 from sqlalchemy.orm import relationship
 from databases import Database
 from app.db.base_class import BaseTable
@@ -37,6 +37,7 @@ class Check(BaseTable):
     status_code = Column(Integer, nullable=False, default=0, index=True)
     schema_valid = Column(Boolean)  # can be null if no schema defined
     monitor = relationship("Monitor", back_populates="checks")
+    latency = Column(Integer)
 
 
 monitor = Monitor.__table__
@@ -142,5 +143,6 @@ async def get_monitor_status_timeseries(
         .where(
             (check.c.monitor_id == monitor_id) &
             (check.c.check_time > start_time) &
-            (check.c.check_time < end_time))
+            (check.c.check_time < end_time)) \
+        .order_by(desc(check.c.check_time))
     return await db.fetch_all(query)

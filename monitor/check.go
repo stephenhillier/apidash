@@ -13,6 +13,7 @@ type result struct {
 	StatusCode int      `pg:",use_zero"`
 	err        error
 	CheckTime  time.Time `sql:"check_time"`
+	Latency    int64
 }
 
 func makeRequests(monitors []*Monitor, limit int) []*result {
@@ -36,8 +37,12 @@ func makeRequests(monitors []*Monitor, limit int) []*result {
 			// it will block when limit reached.
 			semChan <- struct{}{}
 
+			time0 := time.Now()
+
 			// get result and add it to resultsChan
 			res, err := http.Get(m.Endpoint)
+
+			latency := time.Since(time0)
 
 			// in the data model, we will assume a status code of 1 means that we were not
 			// able to assign a valid HTTP status code for whatever reason. Normally
@@ -53,7 +58,9 @@ func makeRequests(monitors []*Monitor, limit int) []*result {
 				MonitorID:  m.ID,
 				StatusCode: statusCode,
 				err:        err,
-				CheckTime:  time.Now().UTC()}
+				CheckTime:  time.Now().UTC(),
+				Latency:    int64(latency / time.Millisecond),
+			}
 			resultsChan <- result
 
 			// remove one from semChan

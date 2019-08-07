@@ -46,6 +46,7 @@ export default class MonitorListCard extends Vue {
       ],
       yAxes: [
         {
+          id: "statusCodeAxis",
           display: true,
           scaleLabel: {
             display: true,
@@ -54,6 +55,19 @@ export default class MonitorListCard extends Vue {
           ticks: {
             suggestedMin: 0, // minimum will be 0, unless there is a lower value.
             suggestedMax: 549
+          }
+        },
+        {
+          id: "latencyAxis",
+          type: "logarithmic",
+          position: "right",
+          scaleLabel: {
+            display: true,
+            labelString: "Latency (ms)"
+          },
+          ticks: {
+            suggestedMin: 0, // minimum will be 0, unless there is a lower value.
+            suggestedMax: 1000
           }
         }
       ]
@@ -66,6 +80,8 @@ export default class MonitorListCard extends Vue {
         {
           label: "Status Code",
           lineTension: 0,
+          yAxisID: "statusCodeAxis",
+          fill: false,
           pointBackgroundColor: (context: any) => {
             var index = context.dataIndex;
             var value = context.dataset.data[index].y;
@@ -80,6 +96,21 @@ export default class MonitorListCard extends Vue {
             return {
               x: new Date(o.check_time),
               y: o.status_code
+            };
+          })
+        },
+        {
+          label: "Latency",
+          fill: false,
+          lineTension: 0,
+          pointBackgroundColor: "#5a67d8",
+          backgroundColor: "#5a67d8",
+          pointRadius: 2,
+          yAxisID: "latencyAxis",
+          data: data.map((o: ICheckStatus) => {
+            return {
+              x: new Date(o.check_time),
+              y: o.latency
             };
           })
         }
