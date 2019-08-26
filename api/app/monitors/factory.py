@@ -32,7 +32,7 @@ class CheckFactory(factory.alchemy.SQLAlchemyModelFactory):
 class MonitorFactory(factory.alchemy.SQLAlchemyModelFactory):
     """ factory to generate a monitor """
     name = "Users list"
-    endpoint = "https://jsonplaceholder.typicode.com/users"
+    endpoint = "http://apidash.dev:8000/api/v1/status/200"
     checks = factory.RelatedFactoryList(CheckFactory, 'monitor', size=24*7)
 
     class Meta:

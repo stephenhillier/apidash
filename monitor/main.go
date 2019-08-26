@@ -58,7 +58,7 @@ func main() {
 
 func (app *App) monitor() {
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(1 * time.Second)
 		_, err := app.DB.checkMonitors()
 		if err != nil {
 			log.Println(err)

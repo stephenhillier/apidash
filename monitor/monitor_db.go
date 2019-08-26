@@ -31,7 +31,7 @@ func (repo *Datastore) checkMonitors() ([]*Monitor, error) {
 	query := `
 		SELECT monitor.id, monitor.name, monitor.endpoint FROM monitor
 		INNER JOIN check_required AS ck ON ck.id = monitor.id
-		LIMIT 5
+		LIMIT 25
 		FOR UPDATE OF monitor SKIP LOCKED
 	`
 

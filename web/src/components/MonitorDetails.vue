@@ -36,7 +36,7 @@ export default class MonitorListCard extends Vue {
           },
           time: {
             unit: "hour",
-            round: "minute",
+            round: "millisecond",
             displayFormats: {
               day: "MMM D",
               hour: "MMM D hA"

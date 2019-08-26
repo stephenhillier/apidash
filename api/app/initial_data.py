@@ -12,9 +12,13 @@ def create_monitor():
 
     # logger
     logger = logging.getLogger("monitors")
-    mon = MonitorFactory()
-    logger.info(f"Adding monitor {mon.name}")
-    db_session.add(mon)
+    codes = [200, 200, 200, 500, 404]
+    for i in range(5):
+        mon = MonitorFactory(
+            endpoint=f"http://apidash.dev:8000/api/v1/status/{codes[i]}"
+        )
+        logger.info(f"Adding monitor {mon.name}")
+        db_session.add(mon)
     db_session.commit()
 
 
